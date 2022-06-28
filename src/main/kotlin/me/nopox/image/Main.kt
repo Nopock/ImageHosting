@@ -2,6 +2,7 @@ package me.nopox.image
 
 import dev.minn.jda.ktx.jdabuilder.intents
 import dev.minn.jda.ktx.jdabuilder.light
+import me.nopox.image.commands.GalleryCommand
 import me.nopox.image.commands.UploadCommand
 import me.nopox.image.mongo.MongoDetails
 import net.dv8tion.jda.api.OnlineStatus
@@ -32,11 +33,14 @@ fun setupDiscord() {
         setMemberCachePolicy(MemberCachePolicy.NONE)
 
         addEventListeners(
-            UploadCommand()
+            UploadCommand(),
+            GalleryCommand()
         )
     }
 
     jda.upsertCommand("upload", "Uploads an image!")
         .addOption(OptionType.ATTACHMENT, "image", "The image to upload", true)
         .queue()
+
+    jda.upsertCommand("gallery", "Shows all your uploaded images!").queue()
 }

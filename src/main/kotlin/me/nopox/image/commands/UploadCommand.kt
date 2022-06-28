@@ -5,6 +5,7 @@ import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.util.concurrent.ForkJoinPool
 
 class UploadCommand : ListenerAdapter() {
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
