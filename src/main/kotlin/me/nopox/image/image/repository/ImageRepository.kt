@@ -9,7 +9,7 @@ object ImageRepository {
         MongoDetails.images.insertOne(image)
     }
 
-    fun getUsers(userId: String): List<ImageEntry> {
+    fun getImages(userId: String): List<ImageEntry> {
         return MongoDetails.images.find(ImageEntry::authorId eq userId).toList()
     }
 
