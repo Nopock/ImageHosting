@@ -38,6 +38,5 @@ fun setupDiscord() {
 
     jda.upsertCommand("upload", "Uploads an image!")
         .addOption(OptionType.ATTACHMENT, "image", "The image to upload", true)
-        .addOption(OptionType.STRING, "name", "The name of the image", false)
         .queue()
 }
