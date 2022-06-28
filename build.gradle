@@ -1,0 +1,24 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.7.0'
+
+    id("com.github.johnrengelman.shadow") version ("5.2.0")
+
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.7.0"
+}
+
+group = "me.nopox"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+    implementation 'com.github.Matrix-Studios-Software:duplex:96cbc27c7c'
+}
