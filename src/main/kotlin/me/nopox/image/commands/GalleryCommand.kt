@@ -24,9 +24,8 @@ class GalleryCommand : ListenerAdapter() {
         val embed = Embed {
             title = "**Gallery**"
             description = "One item in your gallery:"
-            if (randomImage != null) {
-                image = randomImage.discordUrl
-            }
+            image = randomImage?.discordUrl
+
         }
 
         event.replyEmbeds(embed).setEphemeral(true).queue()

@@ -23,10 +23,10 @@ class UploadCommand : ListenerAdapter() {
             return
         }
 
-        val image = event.getOption("image")?.asAttachment
+        val specialImage = event.getOption("image")?.asAttachment
 
-        if (image != null) {
-            if (!image.isImage) {
+        if (specialImage != null) {
+            if (!specialImage.isImage) {
                 val embed = Embed {
                     title = "**Error**"
                     description = "You must upload an image."
@@ -40,19 +40,21 @@ class UploadCommand : ListenerAdapter() {
         // PROXY URL has the image
         val imageId = Math.random().toString().substring(2, 9);
 
-        if (image != null) {
+        if (specialImage != null) {
             ImageRepository.create(
                 ImageEntry(
                     authorId = event.member!!.id,
                     imageId = imageId,
-                    discordUrl = image.proxyUrl
+                    discordUrl = specialImage.proxyUrl
                 )
             )
         }
 
         val embed = Embed {
             title = "**Success**"
-            description = "Your image has been uploaded. You can access it via the following link: https://127.0.0.1/$imageId"
+            description = "Your image has been uploaded. You can access it via the following link: https://c623-73-158-63-248.ngrok.io/$imageId"
+
+            this.image = "https://c623-73-158-63-248.ngrok.io/$imageId"
         }
 
         event.replyEmbeds(embed).setEphemeral(true).queue()
