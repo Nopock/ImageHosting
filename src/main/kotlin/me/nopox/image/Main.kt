@@ -13,14 +13,13 @@ import io.ktor.server.netty.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
+import me.nopox.image.commands.CommandDispatcher
 import me.nopox.image.commands.GalleryCommand
 import me.nopox.image.commands.UploadCommand
 import me.nopox.image.image.repository.ImageRepository
 import me.nopox.image.mongo.MongoDetails
-import me.nopox.image.mongo.MongoDetails.client
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
-import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 
@@ -46,18 +45,11 @@ fun setupDiscord() {
         setActivity(Activity.watching("Your images"))
         setStatus(OnlineStatus.DO_NOT_DISTURB)
         setMemberCachePolicy(MemberCachePolicy.NONE)
-
-        addEventListeners(
-            UploadCommand(),
-            GalleryCommand()
-        )
     }
 
-    jda.upsertCommand("upload", "Uploads an image!")
-        .addOption(OptionType.ATTACHMENT, "image", "The image to upload", true)
-        .queue()
-
-    jda.upsertCommand("gallery", "Shows all your uploaded images!").queue()
+    val commands = CommandDispatcher(discord = jda)
+    commands.registerSlash(UploadCommand, GalleryCommand)
+    jda.addEventListener(commands)
 }
 
 fun createApi() {

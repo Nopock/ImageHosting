@@ -1,33 +1,39 @@
 package me.nopox.image.commands
 
 import dev.minn.jda.ktx.messages.Embed
+import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
-import net.dv8tion.jda.api.hooks.ListenerAdapter
-import java.util.Random
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 
-class GalleryCommand : ListenerAdapter() {
-    override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        if (event.name != "gallery") return
+/**
+ * The command for displaying a collection of a user's uploaded images.
+ */
+object GalleryCommand : SlashCommandHandler {
 
-        val images = event.member?.let { ImageRepository.getImages(it.id) }
+    override val metadata: SlashCommandData
+        get() = Commands.slash("gallery", "Shows all your uploaded images!")
 
-        if (images?.isEmpty() == true) {
-            event.reply("You don't have any images yet!").setEphemeral(true).queue()
+    override fun handle(command: SlashCommandInteractionEvent) {
+        val randomImage = ImageRepository.getImages(command.user.id).randomOrNull()
+        if (randomImage == null) {
+            command.reply("You don't have any images yet!").setEphemeral(true).queue()
             return
         }
 
-        val random = Random()
+        command.replyEmbeds(Messages.Success.randomImage(randomImage))
+            .setEphemeral(true)
+            .queue()
+    }
 
-        val randomImage = images?.get(random.nextInt(images.size))
-
-        val embed = Embed {
-            title = "**Gallery**"
-            description = "One item in your gallery:"
-            image = randomImage?.discordUrl
-
+    private object Messages {
+        object Success {
+            fun randomImage(randomImage: ImageEntry) = Embed {
+                title = "**Gallery**"
+                description = "One item in your gallery:"
+                image = randomImage.discordUrl
+            }
         }
-
-        event.replyEmbeds(embed).setEphemeral(true).queue()
     }
 }
