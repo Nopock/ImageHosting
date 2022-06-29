@@ -5,6 +5,7 @@ import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.litote.kmongo.json
 import java.util.concurrent.ForkJoinPool
 
 class UploadCommand : ListenerAdapter() {
@@ -52,9 +53,9 @@ class UploadCommand : ListenerAdapter() {
 
         val embed = Embed {
             title = "**Success**"
-            description = "Your image has been uploaded. You can access it via the following link: https://c623-73-158-63-248.ngrok.io/$imageId"
+            description = "Your image has been uploaded. You can access it via the following link: https://2328-73-158-63-248.ngrok.io/$imageId"
 
-            this.image = "https://c623-73-158-63-248.ngrok.io/$imageId"
+            image = "https://2328-73-158-63-248.ngrok.io/$imageId"
         }
 
         event.replyEmbeds(embed).setEphemeral(true).queue()

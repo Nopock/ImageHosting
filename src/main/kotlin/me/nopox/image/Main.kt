@@ -62,6 +62,7 @@ fun setupDiscord() {
 
 fun createApi() {
     runBlocking {
+        val client = HttpClient(CIO)
 
         embeddedServer(Netty, port = 8080) {
             routing {
@@ -74,8 +75,6 @@ fun createApi() {
                         call.respondText("Image not found!", ContentType.Text.Plain)
                         return@get
                     }
-
-                    val client = HttpClient(CIO)
 
                     val response = client.get(image.discordUrl)
 
