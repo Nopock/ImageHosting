@@ -1,0 +1,11 @@
+web:
+  port: 8080
+
+discord:
+  token: 'xxx.xxx.xxx'
+
+mongodb:
+  connection_string: 'mongodb://localhost:27017'
+  database_name: 'imageHosting'
+  collection_names:
+    images: 'images'

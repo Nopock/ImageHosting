@@ -20,8 +20,10 @@ repositories {
 
 dependencies {
     implementation(libs.kotlin.stdlib)
-    implementation(libs.kotlin.serialization)
+    implementation(libs.kotlin.serialization.core)
+    implementation(libs.kotlin.serialization.yaml)
 
+    implementation(libs.logback)
     implementation(libs.jda.core)
     implementation(libs.jda.kotlin)
     implementation(libs.kotlin.mongo)

@@ -4,8 +4,6 @@ import dev.minn.jda.ktx.jdabuilder.intents
 import dev.minn.jda.ktx.jdabuilder.light
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -17,7 +15,11 @@ import kotlinx.coroutines.runBlocking
 import me.nopox.image.commands.CommandDispatcher
 import me.nopox.image.commands.GalleryCommand
 import me.nopox.image.commands.UploadCommand
+import me.nopox.image.config.DiscordConfig
+import me.nopox.image.config.WebConfig
 import me.nopox.image.image.ImageEntry
+import me.nopox.image.config.loadConfig
+import me.nopox.image.config.mappedArguments
 import me.nopox.image.image.repository.ImageRepository
 import me.nopox.image.mongo.MongoDetails
 import net.dv8tion.jda.api.OnlineStatus
@@ -25,18 +27,17 @@ import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.requests.GatewayIntent
 import net.dv8tion.jda.api.utils.MemberCachePolicy
 
-fun main() {
-    MongoDetails.start()
+fun main(args: Array<String>) {
+    val argPairs = args.mappedArguments()
+    val config = loadConfig(argPairs["config"] ?: "config.yml")
 
-    setupDiscord()
-
-    createApi()
+    MongoDetails.start(config.mongodb)
+    setupDiscord(config.discord)
+    createApi(config.web)
 }
 
-fun setupDiscord() {
-    val token = "***REMOVED***"
-
-    val jda = light(token, enableCoroutines = true) {
+fun setupDiscord(config: DiscordConfig) {
+    val jda = light(config.token, enableCoroutines = true) {
         intents += listOf(
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_BANS,
@@ -54,11 +55,11 @@ fun setupDiscord() {
     jda.addEventListener(commands)
 }
 
-fun createApi() {
+fun createApi(config: WebConfig) {
     runBlocking {
         val client = HttpClient(CIO)
 
-        embeddedServer(Netty, port = 8080) {
+        embeddedServer(Netty, port = config.port.toInt()) {
             routing {
                 get("/{imageId}") {
                     val imageId = call.parameters["imageId"]

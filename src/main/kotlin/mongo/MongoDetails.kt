@@ -3,9 +3,9 @@ package me.nopox.image.mongo
 import com.mongodb.client.MongoClient
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.MongoDatabase
+import me.nopox.image.config.MongoConfig
 import me.nopox.image.image.ImageEntry
 import org.litote.kmongo.KMongo
-import org.litote.kmongo.getCollection
 
 object MongoDetails {
 
@@ -14,10 +14,10 @@ object MongoDetails {
 
     lateinit var images: MongoCollection<ImageEntry>
 
-    fun start() {
-        client = KMongo.createClient("mongodb://localhost:27017")
-        database = client.getDatabase("imageHosting")
+    fun start(config: MongoConfig) {
+        client = KMongo.createClient(config.connectionString)
+        database = client.getDatabase(config.databaseName)
 
-        images = database.getCollection()
+        images = database.getCollection(config.collectionNames.images, ImageEntry::class.java)
     }
 }
