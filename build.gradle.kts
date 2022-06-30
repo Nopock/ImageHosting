@@ -3,9 +3,11 @@ import org.jetbrains.gradle.ext.settings
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
+    application
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.intellij.settings)
+    alias(libs.plugins.shadowjar)
 }
 
 group = "me.nopox"
@@ -37,4 +39,8 @@ idea {
                     packagePrefix[sourceDir.toRelativeString(projectDir)] = "me.nopox.image"
         }
     }
+}
+
+application {
+    mainClass.set("me.nopox.image.MainKt")
 }
