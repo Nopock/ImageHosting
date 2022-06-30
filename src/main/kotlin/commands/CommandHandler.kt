@@ -28,7 +28,7 @@ interface CommandHandler<out D : CommandData, in E : CommandInteraction> {
      *
      * This usually involves replying to the user in some way.
      */
-    fun handle(command: E)
+    suspend fun handle(command: E)
 }
 
 /**

@@ -1,12 +1,25 @@
 package me.nopox.image.commands
 
 import dev.minn.jda.ktx.messages.Embed
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import kotlinx.coroutines.runBlocking
 import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
+import java.net.URL
 
 /**
  * The command used to upload images to our backend.
@@ -19,25 +32,30 @@ object UploadCommand : SlashCommandHandler {
         get() = Commands.slash("upload", "Uploads an image!")
             .addOption(OptionType.ATTACHMENT, "image", "The image to upload", true)
 
-    override fun handle(command: SlashCommandInteractionEvent) {
+    override suspend fun handle(command: SlashCommandInteractionEvent) {
         if (ImageRepository.getImages(command.user.id).size >= MAX_UPLOADS) {
             command.replyEmbeds(Messages.tooManyUploads()).setEphemeral(true).queue()
             return
         }
 
         val attachment = command.getOption("image")?.asAttachment
+
         if (attachment == null || !attachment.isImage) {
             command.replyEmbeds(Messages.notAnImage()).setEphemeral(true).queue()
             return
         }
 
-        // PROXY URL has the image
+        val client = HttpClient(CIO)
+
         val imageId = Math.random().toString().substring(2, 9)
+
+        val response = client.get(attachment.proxyUrl)
+
         ImageRepository.create(
             ImageEntry(
                 authorId = command.member!!.id,
                 imageId = imageId,
-                discordUrl = attachment.proxyUrl
+                image = response.readBytes()
             )
         )
 

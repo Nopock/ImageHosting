@@ -15,7 +15,7 @@ object GalleryCommand : SlashCommandHandler {
     override val metadata: SlashCommandData
         get() = Commands.slash("gallery", "Shows all your uploaded images!")
 
-    override fun handle(command: SlashCommandInteractionEvent) {
+    override suspend fun handle(command: SlashCommandInteractionEvent) {
         val randomImage = ImageRepository.getImages(command.user.id).randomOrNull()
         if (randomImage == null) {
             command.reply("You don't have any images yet!").setEphemeral(true).queue()
@@ -32,7 +32,7 @@ object GalleryCommand : SlashCommandHandler {
             fun randomImage(randomImage: ImageEntry) = Embed {
                 title = "**Gallery**"
                 description = "One item in your gallery:"
-                image = randomImage.discordUrl
+                image = "tacker.cc:8080/${randomImage.imageId}"
             }
         }
     }

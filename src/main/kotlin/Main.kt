@@ -10,12 +10,14 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
 import me.nopox.image.commands.CommandDispatcher
 import me.nopox.image.commands.GalleryCommand
 import me.nopox.image.commands.UploadCommand
+import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import me.nopox.image.mongo.MongoDetails
 import net.dv8tion.jda.api.OnlineStatus
@@ -68,9 +70,13 @@ fun createApi() {
                         return@get
                     }
 
-                    val response = client.get(image.discordUrl)
+                    call.respondBytes(image.image)
+                }
 
-                    call.respondBytes(response.readBytes())
+                post("/image/") {
+                    val image = call.receive<ImageEntry>()
+
+                    ImageRepository.create(image)
                 }
             }
         }.start(wait = true)

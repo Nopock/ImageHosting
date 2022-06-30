@@ -1,5 +1,6 @@
 package me.nopox.image.commands
 
+import kotlinx.coroutines.runBlocking
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.EventListener
@@ -36,7 +37,9 @@ class CommandDispatcher(private val discord: JDA) : ListenerAdapter() {
     }
 
     override fun onSlashCommandInteraction(command: SlashCommandInteractionEvent) {
+        runBlocking {
+            slashHandlers[command.name.lowercase()]?.handle(command)
+        }
         // If we don't find a command with that name, don't do anything; another dispatcher might be handling it.
-        slashHandlers[command.name.lowercase()]?.handle(command)
     }
 }
