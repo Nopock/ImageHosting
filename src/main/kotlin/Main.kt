@@ -17,9 +17,9 @@ import me.nopox.image.commands.GalleryCommand
 import me.nopox.image.commands.UploadCommand
 import me.nopox.image.config.DiscordConfig
 import me.nopox.image.config.WebConfig
-import me.nopox.image.image.ImageEntry
 import me.nopox.image.config.loadConfig
 import me.nopox.image.config.mappedArguments
+import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import me.nopox.image.mongo.MongoDetails
 import net.dv8tion.jda.api.OnlineStatus
@@ -50,9 +50,10 @@ fun setupDiscord(config: DiscordConfig) {
         setMemberCachePolicy(MemberCachePolicy.NONE)
     }
 
-    val commands = CommandDispatcher(discord = jda)
-    commands.registerSlash(UploadCommand, GalleryCommand)
-    jda.addEventListener(commands)
+    jda.addEventListener(CommandDispatcher(discord = jda).apply {
+        registerSlash(::GalleryCommand)
+        registerAsyncSlash(::UploadCommand)
+    })
 }
 
 fun createApi(config: WebConfig) {

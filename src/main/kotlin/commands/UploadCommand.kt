@@ -1,3 +1,5 @@
+@file:Suppress("FunctionName")
+
 package me.nopox.image.commands
 
 import dev.minn.jda.ktx.messages.Embed
@@ -5,66 +7,61 @@ import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import kotlinx.coroutines.runBlocking
 import me.nopox.image.image.ImageEntry
 import me.nopox.image.image.repository.ImageRepository
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.Commands
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import java.net.URL
+
+/**
+ * The maximum number of images that a user may have in our database at any given time.
+ */
+private const val MAX_UPLOADS = 5
+
+/**
+ * An HTTP client for downloading image files from discord's CDN.
+ */
+private val attachmentFetcher: HttpClient by lazy { HttpClient(CIO) }
 
 /**
  * The command used to upload images to our backend.
  */
-object UploadCommand : SlashCommandHandler {
+@Command("upload", "Uploads an image!")
+@CommandOption("image", "The image to upload", OptionType.ATTACHMENT, isRequired = true)
+suspend fun UploadCommand(command: SlashCommandInteractionEvent) {
+    // Ensure the user hasn't surpassed their maximum amount of uploads.
+    val totalAlreadyUploaded = ImageRepository.getImages(command.user.id).size
+    if (totalAlreadyUploaded >= MAX_UPLOADS)
+        return command.replyEmbeds(Embeds.Error.tooManyUploads()).setEphemeral(true).queue()
 
-    private const val MAX_UPLOADS = 5
+    // Ensure the user included an image file when they invoked the command.
+    val attachment = command.getOption("image")?.asAttachment
+    if (attachment == null || !attachment.isImage)
+        return command.replyEmbeds(Embeds.Error.notAnImage()).setEphemeral(true).queue()
 
-    override val metadata: SlashCommandData
-        get() = Commands.slash("upload", "Uploads an image!")
-            .addOption(OptionType.ATTACHMENT, "image", "The image to upload", true)
+    // Fetch the image itself from discord's CDN.
+    val response = attachmentFetcher.get(attachment.proxyUrl)
+    // Generate a random ID that the image can be referenced by.
+    // TODO: 7/4/22 Check for collisions so that we don't overwrite anything by coincidence.
+    val imageId = Math.random().toString().substring(2, 9)
 
-    override suspend fun handle(command: SlashCommandInteractionEvent) {
-        if (ImageRepository.getImages(command.user.id).size >= MAX_UPLOADS) {
-            command.replyEmbeds(Messages.tooManyUploads()).setEphemeral(true).queue()
-            return
-        }
-
-        val attachment = command.getOption("image")?.asAttachment
-
-        if (attachment == null || !attachment.isImage) {
-            command.replyEmbeds(Messages.notAnImage()).setEphemeral(true).queue()
-            return
-        }
-
-        val client = HttpClient(CIO)
-
-        val imageId = Math.random().toString().substring(2, 9)
-
-        val response = client.get(attachment.proxyUrl)
-
-        ImageRepository.create(
-            ImageEntry(
-                authorId = command.member!!.id,
-                imageId = imageId,
-                image = response.readBytes()
-            )
+    ImageRepository.create(
+        ImageEntry(
+            authorId = command.user.id,
+            imageId = imageId,
+            image = response.readBytes()
         )
+    )
 
-        command.replyEmbeds(Messages.successfulUpload(imageId))
-            .setEphemeral(true)
-            .queue()
-    }
+    command.replyEmbeds(Embeds.Success.uploaded(imageId))
+        .setEphemeral(true)
+        .queue()
+}
 
-    private object Messages {
+/**
+ * Functions for generating the command's responses, which we display as embedded messages.
+ */
+private val Embeds = object {
+    val Error = object {
         fun tooManyUploads() = Embed {
             title = "**Error**"
             description = "You have reached the maximum number of images you can upload ($MAX_UPLOADS). " +
@@ -75,8 +72,10 @@ object UploadCommand : SlashCommandHandler {
             title = "**Error**"
             description = "You must upload an image."
         }
+    }
 
-        fun successfulUpload(imageId: String) = Embed {
+    val Success = object {
+        fun uploaded(imageId: String) = Embed {
             title = "**Success**"
             description = "Your image has been uploaded. You can access it via the following link: " +
                     "https://2328-73-158-63-248.ngrok.io/$imageId"
